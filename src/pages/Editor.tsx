@@ -198,176 +198,176 @@ const Editor = () => {
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Toolbar */}
-        <div className="h-14 border-b border-gray-200 flex items-center px-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+          {/* Tabs Navigation */}
+          <div className="h-14 border-b border-gray-200 flex items-center px-4">
             <TabsList>
               <TabsTrigger value="design">Design</TabsTrigger>
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="ai">AI Assistant</TabsTrigger>
             </TabsList>
-          </Tabs>
-        </div>
-        
-        {/* Editor Area */}
-        <div className="flex-1 overflow-auto p-4">
-          <TabsContent value="design" className="h-full">
-            <div className="bg-white border border-gray-200 rounded-lg h-full p-4">
-              <div className="text-center p-10 text-gray-500">
-                Drag and drop components from the sidebar to build your website.
-              </div>
-              
-              {/* Preview of the website structure */}
-              <div className="border border-gray-300 rounded-lg p-4 mb-4">
-                <div className="bg-gray-100 p-4 mb-4 rounded">Header</div>
-                <div className="bg-gray-100 p-8 mb-4 rounded text-center">
-                  <h2 className="text-2xl font-bold">{(project.content as any)?.title || 'Welcome to my website'}</h2>
-                  <p className="mt-2">This is a hero section. You can edit this content.</p>
+          </div>
+          
+          {/* Tabs Content */}
+          <div className="flex-1 overflow-auto p-4">
+            <TabsContent value="design" className="h-full">
+              <div className="bg-white border border-gray-200 rounded-lg h-full p-4">
+                <div className="text-center p-10 text-gray-500">
+                  Drag and drop components from the sidebar to build your website.
                 </div>
-                <div className="bg-gray-100 p-4 mb-4 rounded">
-                  <p>This is a text section. You can edit this content in the editor.</p>
+                
+                {/* Preview of the website structure */}
+                <div className="border border-gray-300 rounded-lg p-4 mb-4">
+                  <div className="bg-gray-100 p-4 mb-4 rounded">Header</div>
+                  <div className="bg-gray-100 p-8 mb-4 rounded text-center">
+                    <h2 className="text-2xl font-bold">{(project.content as any)?.title || 'Welcome to my website'}</h2>
+                    <p className="mt-2">This is a hero section. You can edit this content.</p>
+                  </div>
+                  <div className="bg-gray-100 p-4 mb-4 rounded">
+                    <p>This is a text section. You can edit this content in the editor.</p>
+                  </div>
+                  <div className="bg-gray-100 p-4 rounded">Footer</div>
                 </div>
-                <div className="bg-gray-100 p-4 rounded">Footer</div>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="content" className="h-full">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="title">Website Title</Label>
-                <Input 
-                  id="title" 
-                  value={(project.content as any)?.title || ''} 
-                  onChange={(e) => setProject({
-                    ...project,
-                    content: { ...(project.content as any), title: e.target.value }
-                  })}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="heroHeading">Hero Heading</Label>
-                <Input 
-                  id="heroHeading" 
-                  value={(project.content as any)?.sections?.[0]?.heading || ''} 
-                  onChange={(e) => {
-                    const newSections = [...((project.content as any)?.sections || [])];
-                    if (newSections[0]) {
-                      newSections[0] = { ...newSections[0], heading: e.target.value };
-                    }
-                    setProject({
+            </TabsContent>
+            
+            <TabsContent value="content" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="title">Website Title</Label>
+                  <Input 
+                    id="title" 
+                    value={(project.content as any)?.title || ''} 
+                    onChange={(e) => setProject({
                       ...project,
-                      content: { ...(project.content as any), sections: newSections }
-                    });
-                  }}
-                />
+                      content: { ...(project.content as any), title: e.target.value }
+                    })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="heroHeading">Hero Heading</Label>
+                  <Input 
+                    id="heroHeading" 
+                    value={(project.content as any)?.sections?.[0]?.heading || ''} 
+                    onChange={(e) => {
+                      const newSections = [...((project.content as any)?.sections || [])];
+                      if (newSections[0]) {
+                        newSections[0] = { ...newSections[0], heading: e.target.value };
+                      }
+                      setProject({
+                        ...project,
+                        content: { ...(project.content as any), sections: newSections }
+                      });
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="heroSubheading">Hero Subheading</Label>
+                  <Input 
+                    id="heroSubheading" 
+                    value={(project.content as any)?.sections?.[0]?.subheading || ''} 
+                    onChange={(e) => {
+                      const newSections = [...((project.content as any)?.sections || [])];
+                      if (newSections[0]) {
+                        newSections[0] = { ...newSections[0], subheading: e.target.value };
+                      }
+                      setProject({
+                        ...project,
+                        content: { ...(project.content as any), sections: newSections }
+                      });
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="textContent">Text Content</Label>
+                  <Textarea 
+                    id="textContent" 
+                    rows={6}
+                    value={(project.content as any)?.sections?.[1]?.content || ''} 
+                    onChange={(e) => {
+                      const newSections = [...((project.content as any)?.sections || [])];
+                      if (newSections[1]) {
+                        newSections[1] = { ...newSections[1], content: e.target.value };
+                      }
+                      setProject({
+                        ...project,
+                        content: { ...(project.content as any), sections: newSections }
+                      });
+                    }}
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="heroSubheading">Hero Subheading</Label>
-                <Input 
-                  id="heroSubheading" 
-                  value={(project.content as any)?.sections?.[0]?.subheading || ''} 
-                  onChange={(e) => {
-                    const newSections = [...((project.content as any)?.sections || [])];
-                    if (newSections[0]) {
-                      newSections[0] = { ...newSections[0], subheading: e.target.value };
-                    }
-                    setProject({
-                      ...project,
-                      content: { ...(project.content as any), sections: newSections }
-                    });
-                  }}
-                />
+            </TabsContent>
+            
+            <TabsContent value="settings" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="projectName">Project Name</Label>
+                  <Input 
+                    id="projectName" 
+                    value={project.name || ''} 
+                    onChange={(e) => setProject({ ...project, name: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="projectDescription">Project Description</Label>
+                  <Textarea 
+                    id="projectDescription" 
+                    value={project.description || ''} 
+                    onChange={(e) => setProject({ ...project, description: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="template">Template</Label>
+                  <Input id="template" value={project.template || ''} disabled />
+                </div>
+                
+                <div>
+                  <Button variant="destructive">Delete Project</Button>
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="textContent">Text Content</Label>
-                <Textarea 
-                  id="textContent" 
-                  rows={6}
-                  value={(project.content as any)?.sections?.[1]?.content || ''} 
-                  onChange={(e) => {
-                    const newSections = [...((project.content as any)?.sections || [])];
-                    if (newSections[1]) {
-                      newSections[1] = { ...newSections[1], content: e.target.value };
-                    }
-                    setProject({
-                      ...project,
-                      content: { ...(project.content as any), sections: newSections }
-                    });
-                  }}
-                />
+            </TabsContent>
+            
+            <TabsContent value="ai" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="aiPrompt">Describe what you want to generate</Label>
+                  <Textarea 
+                    id="aiPrompt" 
+                    rows={6}
+                    placeholder="E.g., Generate a product description for a new smartphone with advanced camera features and long battery life."
+                    value={aiPrompt} 
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleGenerateContent} 
+                  disabled={generatingContent || !aiPrompt.trim()}
+                >
+                  {generatingContent ? 'Generating...' : 'Generate Content'}
+                </Button>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">AI Assistant Tips</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                    <li>Be specific about what you want to generate</li>
+                    <li>Mention the tone (professional, casual, friendly)</li>
+                    <li>Specify the target audience</li>
+                    <li>Include key points you want to highlight</li>
+                    <li>Mention any specific calls-to-action</li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="settings" className="h-full">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="projectName">Project Name</Label>
-                <Input 
-                  id="projectName" 
-                  value={project.name || ''} 
-                  onChange={(e) => setProject({ ...project, name: e.target.value })}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="projectDescription">Project Description</Label>
-                <Textarea 
-                  id="projectDescription" 
-                  value={project.description || ''} 
-                  onChange={(e) => setProject({ ...project, description: e.target.value })}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="template">Template</Label>
-                <Input id="template" value={project.template || ''} disabled />
-              </div>
-              
-              <div>
-                <Button variant="destructive">Delete Project</Button>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="ai" className="h-full">
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="aiPrompt">Describe what you want to generate</Label>
-                <Textarea 
-                  id="aiPrompt" 
-                  rows={6}
-                  placeholder="E.g., Generate a product description for a new smartphone with advanced camera features and long battery life."
-                  value={aiPrompt} 
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                />
-              </div>
-              
-              <Button 
-                onClick={handleGenerateContent} 
-                disabled={generatingContent || !aiPrompt.trim()}
-              >
-                {generatingContent ? 'Generating...' : 'Generate Content'}
-              </Button>
-              
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">AI Assistant Tips</h3>
-                <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                  <li>Be specific about what you want to generate</li>
-                  <li>Mention the tone (professional, casual, friendly)</li>
-                  <li>Specify the target audience</li>
-                  <li>Include key points you want to highlight</li>
-                  <li>Mention any specific calls-to-action</li>
-                </ul>
-              </div>
-            </div>
-          </TabsContent>
-        </div>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </div>
   );
