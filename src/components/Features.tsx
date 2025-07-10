@@ -1,50 +1,70 @@
 
-import React from 'react';
+import { CheckCircle } from 'lucide-react';
 
 const features = [
   {
-    title: 'Feature One',
-    description: 'Description of your first amazing feature goes here. Explain the benefits clearly.',
+    name: 'AI-Powered Website Generation',
+    description: 'Describe your website in plain English, and our AI will build it for you in seconds.',
+    icon: CheckCircle,
   },
   {
-    title: 'Feature Two',
-    description: 'Description of your second amazing feature goes here. Keep it concise and compelling.',
+    name: 'Customizable Templates',
+    description: 'Choose from dozens of professionally designed templates for any type of website.',
+    icon: CheckCircle,
   },
   {
-    title: 'Feature Three',
-    description: 'Description of your third amazing feature goes here. Focus on the value it provides.',
+    name: 'Responsive Design',
+    description: 'All websites are fully responsive and look great on any device.',
+    icon: CheckCircle,
   },
   {
-    title: 'Feature Four',
-    description: 'Description of your fourth amazing feature goes here. Tell users why it matters.',
+    name: 'No Coding Required',
+    description: 'Build complex websites without writing a single line of code.',
+    icon: CheckCircle,
+  },
+  {
+    name: 'SEO Optimized',
+    description: 'All websites are optimized for search engines out of the box.',
+    icon: CheckCircle,
+  },
+  {
+    name: 'Fast Hosting',
+    description: 'Host your website on our lightning-fast servers with one click.',
+    icon: CheckCircle,
   },
 ];
 
 const Features = () => {
   return (
-    <section id="features" className="py-16 ">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Features</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Highlight the key features of your product or service here. Focus on the benefits that matter most to your audience.
+    <div className="py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="lg:text-center">
+          <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Features</h2>
+          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            Everything you need to build amazing websites
+          </p>
+          <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            Buildify combines the power of AI with beautiful design to help you create websites faster than ever before.
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            // Outer container creates the gradient border and shadow
-            <div key={index} className="p-[2px] bg-gradient-to-t from-purple-900 to-blue-900 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              {/* Inner container holds the content with a solid background */}
-              <div className="bg-black p-6 rounded-md h-full">
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-gray-500">{feature.description}</p>
+
+        <div className="mt-10">
+          <dl className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
+            {features.map((feature) => (
+              <div key={feature.name} className="relative">
+                <dt>
+                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
+                    <feature.icon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">{feature.name}</p>
+                </dt>
+                <dd className="mt-2 ml-16 text-base text-gray-500">{feature.description}</dd>
               </div>
-            </div>
-          ))}
+            ))}
+          </dl>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
