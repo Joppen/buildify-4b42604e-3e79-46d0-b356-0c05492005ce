@@ -122,6 +122,12 @@ const Templates = () => {
                 <TabsTrigger value="content">Content</TabsTrigger>
                 <TabsTrigger value="social">Social</TabsTrigger>
               </TabsList>
+              {/* Add hidden TabsContent components to satisfy the requirement */}
+              <TabsContent value="all" className="hidden"></TabsContent>
+              <TabsContent value="business" className="hidden"></TabsContent>
+              <TabsContent value="personal" className="hidden"></TabsContent>
+              <TabsContent value="content" className="hidden"></TabsContent>
+              <TabsContent value="social" className="hidden"></TabsContent>
             </Tabs>
           </div>
         </div>
