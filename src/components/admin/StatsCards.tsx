@@ -1,11 +1,11 @@
 
 import { 
   Users, 
-  FolderKanban, 
+  FileText, 
+  CreditCard, 
   MessageSquare, 
-  CreditCard,
-  TrendingUp,
-  TrendingDown
+  TrendingUp, 
+  TrendingDown 
 } from 'lucide-react';
 
 const StatsCards = () => {
@@ -15,52 +15,55 @@ const StatsCards = () => {
       value: '2,543',
       change: '+12.5%',
       trend: 'up',
-      icon: Users,
-      color: 'bg-blue-500'
+      icon: <Users size={24} className="text-blue-500" />,
     },
     {
       title: 'Active Projects',
-      value: '1,873',
+      value: '1,875',
       change: '+8.2%',
       trend: 'up',
-      icon: FolderKanban,
-      color: 'bg-green-500'
+      icon: <FileText size={24} className="text-green-500" />,
+    },
+    {
+      title: 'Monthly Revenue',
+      value: '$32,621',
+      change: '+15.3%',
+      trend: 'up',
+      icon: <CreditCard size={24} className="text-purple-500" />,
     },
     {
       title: 'Support Tickets',
       value: '42',
-      change: '-5.1%',
+      change: '-5.8%',
       trend: 'down',
-      icon: MessageSquare,
-      color: 'bg-yellow-500'
+      icon: <MessageSquare size={24} className="text-orange-500" />,
     },
-    {
-      title: 'Monthly Revenue',
-      value: '$32,594',
-      change: '+18.3%',
-      trend: 'up',
-      icon: CreditCard,
-      color: 'bg-purple-500'
-    }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {stats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-              <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
-              <div className={`flex items-center mt-2 ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-                <span className="text-sm font-medium">{stat.change} from last month</span>
-              </div>
+        <div 
+          key={index} 
+          className="bg-white rounded-lg shadow p-6 flex flex-col"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 rounded-lg bg-gray-100">
+              {stat.icon}
             </div>
-            <div className={`${stat.color} p-3 rounded-lg text-white`}>
-              <stat.icon size={24} />
+            <div className={`flex items-center ${
+              stat.trend === 'up' ? 'text-green-500' : 'text-red-500'
+            }`}>
+              <span className="text-sm font-medium">{stat.change}</span>
+              {stat.trend === 'up' ? (
+                <TrendingUp size={16} className="ml-1" />
+              ) : (
+                <TrendingDown size={16} className="ml-1" />
+              )}
             </div>
           </div>
+          <div className="text-3xl font-bold mb-1">{stat.value}</div>
+          <div className="text-sm text-gray-500">{stat.title}</div>
         </div>
       ))}
     </div>

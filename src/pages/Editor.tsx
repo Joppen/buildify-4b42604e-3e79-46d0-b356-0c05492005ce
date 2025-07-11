@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,11 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Project } from '@/types';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useDrag, useDrop } from 'react-dnd';
 
-// Component types for drag and drop
+// Component types
 const componentTypes = {
   HEADER: 'header',
   HERO: 'hero',
@@ -34,20 +31,17 @@ const componentTypes = {
 };
 
 // Draggable component
-const DraggableComponent = ({ type, name, disabled = false }) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'COMPONENT',
-    item: { type },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-    canDrag: !disabled
-  }));
-
+const DraggableComponent = ({ type, name, disabled = false, onDragStart }) => {
   return (
     <div
-      ref={drag}
-      className={`p-2 bg-white rounded border border-gray-200 cursor-pointer hover:bg-blue-50 ${isDragging ? 'opacity-50' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      draggable={!disabled}
+      onDragStart={(e) => {
+        if (!disabled) {
+          e.dataTransfer.setData('componentType', type);
+          onDragStart();
+        }
+      }}
+      className={`p-2 bg-white rounded border border-gray-200 cursor-pointer hover:bg-blue-50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {name}
     </div>
@@ -56,18 +50,32 @@ const DraggableComponent = ({ type, name, disabled = false }) => {
 
 // Droppable area
 const DroppableArea = ({ onDrop, children, sections }) => {
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'COMPONENT',
-    drop: (item) => onDrop(item.type),
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  }));
+  const [isDragOver, setIsDragOver] = useState(false);
+  
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const componentType = e.dataTransfer.getData('componentType');
+    if (componentType) {
+      onDrop(componentType);
+    }
+  };
 
   return (
     <div 
-      ref={drop} 
-      className={`border border-gray-300 rounded-lg p-4 mb-4 min-h-[400px] ${isOver ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`border border-gray-300 rounded-lg p-4 mb-4 min-h-[400px] ${isDragOver ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}
     >
       {sections && sections.length > 0 ? (
         sections.map((section, index) => (
@@ -250,6 +258,7 @@ const Editor = () => {
   const [activeTab, setActiveTab] = useState('design');
   const [aiPrompt, setAiPrompt] = useState('');
   const [generatingContent, setGeneratingContent] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     // In a real implementation, we would fetch the project from Supabase
@@ -514,152 +523,102 @@ const Editor = () => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 bg-gray-100 border-r border-gray-200 p-4 flex flex-col">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-2">{project.name}</h2>
-            <p className="text-sm text-gray-500">{project.description}</p>
-          </div>
-          
-          <div className="space-y-2 mb-6">
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? 'Saving...' : 'Save'}
-            </Button>
-            <Button onClick={handlePreview} variant="outline" className="w-full">
-              Preview
-            </Button>
-            <Button 
-              onClick={handlePublish} 
-              variant="outline" 
-              className={`w-full ${project.published ? 'bg-green-100 text-green-800' : ''}`}
-            >
-              {project.published ? 'Published' : 'Publish'}
-            </Button>
-          </div>
-          
-          <div className="flex-grow">
-            <h3 className="font-medium mb-2">Components</h3>
-            <div className="space-y-2">
-              {getAvailableComponents().map((component) => (
-                <DraggableComponent 
-                  key={component.type} 
-                  type={component.type} 
-                  name={component.name} 
-                />
-              ))}
-            </div>
-          </div>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-64 bg-gray-100 border-r border-gray-200 p-4 flex flex-col">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-2">{project.name}</h2>
+          <p className="text-sm text-gray-500">{project.description}</p>
         </div>
         
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-            {/* Tabs Navigation */}
-            <div className="h-14 border-b border-gray-200 flex items-center px-4">
-              <TabsList>
-                <TabsTrigger value="design">Design</TabsTrigger>
-                <TabsTrigger value="content">Content</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-                <TabsTrigger value="ai">AI Assistant</TabsTrigger>
-              </TabsList>
-            </div>
+        <div className="space-y-2 mb-6">
+          <Button onClick={handleSave} disabled={saving} className="w-full">
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+          <Button onClick={handlePreview} variant="outline" className="w-full">
+            Preview
+          </Button>
+          <Button 
+            onClick={handlePublish} 
+            variant="outline" 
+            className={`w-full ${project.published ? 'bg-green-100 text-green-800' : ''}`}
+          >
+            {project.published ? 'Published' : 'Publish'}
+          </Button>
+        </div>
+        
+        <div className="flex-grow">
+          <h3 className="font-medium mb-2">Components</h3>
+          <div className="space-y-2">
+            {getAvailableComponents().map((component) => (
+              <DraggableComponent 
+                key={component.type} 
+                type={component.type} 
+                name={component.name}
+                onDragStart={() => setIsDragging(true)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+          {/* Tabs Navigation */}
+          <div className="h-14 border-b border-gray-200 flex items-center px-4">
+            <TabsList>
+              <TabsTrigger value="design">Design</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="ai">AI Assistant</TabsTrigger>
+            </TabsList>
+          </div>
+          
+          {/* Tabs Content */}
+          <div className="flex-1 overflow-auto p-4">
+            <TabsContent value="design" className="h-full">
+              <div className="bg-white border border-gray-200 rounded-lg h-full p-4">
+                <DroppableArea 
+                  onDrop={handleAddComponent}
+                  sections={(project.content as any)?.sections}
+                >
+                  Drag and drop components from the sidebar to build your website.
+                </DroppableArea>
+              </div>
+            </TabsContent>
             
-            {/* Tabs Content */}
-            <div className="flex-1 overflow-auto p-4">
-              <TabsContent value="design" className="h-full">
-                <div className="bg-white border border-gray-200 rounded-lg h-full p-4">
-                  <DroppableArea 
-                    onDrop={handleAddComponent}
-                    sections={(project.content as any)?.sections}
-                  >
-                    Drag and drop components from the sidebar to build your website.
-                  </DroppableArea>
+            <TabsContent value="content" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="title">Website Title</Label>
+                  <Input 
+                    id="title" 
+                    value={(project.content as any)?.title || ''} 
+                    onChange={(e) => setProject({
+                      ...project,
+                      content: { ...(project.content as any), title: e.target.value }
+                    })}
+                  />
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="content" className="h-full">
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="title">Website Title</Label>
-                    <Input 
-                      id="title" 
-                      value={(project.content as any)?.title || ''} 
-                      onChange={(e) => setProject({
-                        ...project,
-                        content: { ...(project.content as any), title: e.target.value }
-                      })}
-                    />
-                  </div>
-                  
-                  {(project.content as any)?.sections?.map((section, index) => (
-                    <div key={index} className="border p-4 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-medium capitalize">{section.type} Section</h3>
-                        <Button variant="destructive" size="sm">Remove</Button>
-                      </div>
-                      
-                      {section.type === 'hero' && (
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor={`heading-${index}`}>Heading</Label>
-                            <Input 
-                              id={`heading-${index}`} 
-                              value={section.heading || ''} 
-                              onChange={(e) => {
-                                const newSections = [...((project.content as any)?.sections)];
-                                newSections[index] = { ...newSections[index], heading: e.target.value };
-                                setProject({
-                                  ...project,
-                                  content: { ...(project.content as any), sections: newSections }
-                                });
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor={`subheading-${index}`}>Subheading</Label>
-                            <Input 
-                              id={`subheading-${index}`} 
-                              value={section.subheading || ''} 
-                              onChange={(e) => {
-                                const newSections = [...((project.content as any)?.sections)];
-                                newSections[index] = { ...newSections[index], subheading: e.target.value };
-                                setProject({
-                                  ...project,
-                                  content: { ...(project.content as any), sections: newSections }
-                                });
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor={`buttonText-${index}`}>Button Text</Label>
-                            <Input 
-                              id={`buttonText-${index}`} 
-                              value={section.buttonText || ''} 
-                              onChange={(e) => {
-                                const newSections = [...((project.content as any)?.sections)];
-                                newSections[index] = { ...newSections[index], buttonText: e.target.value };
-                                setProject({
-                                  ...project,
-                                  content: { ...(project.content as any), sections: newSections }
-                                });
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {section.type === 'text' && (
+                
+                {(project.content as any)?.sections?.map((section, index) => (
+                  <div key={index} className="border p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium capitalize">{section.type} Section</h3>
+                      <Button variant="destructive" size="sm">Remove</Button>
+                    </div>
+                    
+                    {section.type === 'hero' && (
+                      <div className="space-y-4">
                         <div>
-                          <Label htmlFor={`content-${index}`}>Content</Label>
-                          <Textarea 
-                            id={`content-${index}`} 
-                            rows={4}
-                            value={section.content || ''} 
+                          <Label htmlFor={`heading-${index}`}>Heading</Label>
+                          <Input 
+                            id={`heading-${index}`} 
+                            value={section.heading || ''} 
                             onChange={(e) => {
                               const newSections = [...((project.content as any)?.sections)];
-                              newSections[index] = { ...newSections[index], content: e.target.value };
+                              newSections[index] = { ...newSections[index], heading: e.target.value };
                               setProject({
                                 ...project,
                                 content: { ...(project.content as any), sections: newSections }
@@ -667,151 +626,202 @@ const Editor = () => {
                             }}
                           />
                         </div>
-                      )}
-                      
-                      {section.type === 'image' && (
-                        <div className="space-y-4">
-                          <div className="border-2 border-dashed border-gray-300 p-4 text-center rounded-lg">
-                            <p className="text-gray-500 mb-2">Drag and drop an image here, or click to select</p>
-                            <Button variant="outline" size="sm">Upload Image</Button>
-                          </div>
-                          <div>
-                            <Label htmlFor={`caption-${index}`}>Caption (optional)</Label>
-                            <Input 
-                              id={`caption-${index}`} 
-                              value={section.caption || ''} 
-                              onChange={(e) => {
-                                const newSections = [...((project.content as any)?.sections)];
-                                newSections[index] = { ...newSections[index], caption: e.target.value };
-                                setProject({
-                                  ...project,
-                                  content: { ...(project.content as any), sections: newSections }
-                                });
-                              }}
-                            />
-                          </div>
+                        <div>
+                          <Label htmlFor={`subheading-${index}`}>Subheading</Label>
+                          <Input 
+                            id={`subheading-${index}`} 
+                            value={section.subheading || ''} 
+                            onChange={(e) => {
+                              const newSections = [...((project.content as any)?.sections)];
+                              newSections[index] = { ...newSections[index], subheading: e.target.value };
+                              setProject({
+                                ...project,
+                                content: { ...(project.content as any), sections: newSections }
+                              });
+                            }}
+                          />
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <div>
+                          <Label htmlFor={`buttonText-${index}`}>Button Text</Label>
+                          <Input 
+                            id={`buttonText-${index}`} 
+                            value={section.buttonText || ''} 
+                            onChange={(e) => {
+                              const newSections = [...((project.content as any)?.sections)];
+                              newSections[index] = { ...newSections[index], buttonText: e.target.value };
+                              setProject({
+                                ...project,
+                                content: { ...(project.content as any), sections: newSections }
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {section.type === 'text' && (
+                      <div>
+                        <Label htmlFor={`content-${index}`}>Content</Label>
+                        <Textarea 
+                          id={`content-${index}`} 
+                          rows={4}
+                          value={section.content || ''} 
+                          onChange={(e) => {
+                            const newSections = [...((project.content as any)?.sections)];
+                            newSections[index] = { ...newSections[index], content: e.target.value };
+                            setProject({
+                              ...project,
+                              content: { ...(project.content as any), sections: newSections }
+                            });
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    {section.type === 'image' && (
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-gray-300 p-4 text-center rounded-lg">
+                          <p className="text-gray-500 mb-2">Drag and drop an image here, or click to select</p>
+                          <Button variant="outline" size="sm">Upload Image</Button>
+                        </div>
+                        <div>
+                          <Label htmlFor={`caption-${index}`}>Caption (optional)</Label>
+                          <Input 
+                            id={`caption-${index}`} 
+                            value={section.caption || ''} 
+                            onChange={(e) => {
+                              const newSections = [...((project.content as any)?.sections)];
+                              newSections[index] = { ...newSections[index], caption: e.target.value };
+                              setProject({
+                                ...project,
+                                content: { ...(project.content as any), sections: newSections }
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="settings" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="projectName">Project Name</Label>
+                  <Input 
+                    id="projectName" 
+                    value={project.name || ''} 
+                    onChange={(e) => setProject({ ...project, name: e.target.value })}
+                  />
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="settings" className="h-full">
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="projectName">Project Name</Label>
-                    <Input 
-                      id="projectName" 
-                      value={project.name || ''} 
-                      onChange={(e) => setProject({ ...project, name: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="projectDescription">Project Description</Label>
-                    <Textarea 
-                      id="projectDescription" 
-                      value={project.description || ''} 
-                      onChange={(e) => setProject({ ...project, description: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="template">Template</Label>
-                    <Input id="template" value={project.template || ''} disabled />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Theme Colors</Label>
-                    <div className="flex space-x-4">
-                      <div>
-                        <div className="w-10 h-10 rounded-full bg-blue-600 mb-1"></div>
-                        <span className="text-xs">Primary</span>
-                      </div>
-                      <div>
-                        <div className="w-10 h-10 rounded-full bg-gray-800 mb-1"></div>
-                        <span className="text-xs">Secondary</span>
-                      </div>
-                      <div>
-                        <div className="w-10 h-10 rounded-full bg-white border border-gray-300 mb-1"></div>
-                        <span className="text-xs">Background</span>
-                      </div>
-                      <div>
-                        <div className="w-10 h-10 rounded-full bg-gray-900 mb-1"></div>
-                        <span className="text-xs">Text</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label>Font Settings</Label>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      <div>
-                        <Label htmlFor="headingFont" className="text-xs">Heading Font</Label>
-                        <select className="w-full border rounded p-2 text-sm">
-                          <option>Inter</option>
-                          <option>Roboto</option>
-                          <option>Montserrat</option>
-                          <option>Playfair Display</option>
-                        </select>
-                      </div>
-                      <div>
-                        <Label htmlFor="bodyFont" className="text-xs">Body Font</Label>
-                        <select className="w-full border rounded p-2 text-sm">
-                          <option>Inter</option>
-                          <option>Roboto</option>
-                          <option>Open Sans</option>
-                          <option>Lato</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Button variant="destructive">Delete Project</Button>
-                  </div>
+                
+                <div>
+                  <Label htmlFor="projectDescription">Project Description</Label>
+                  <Textarea 
+                    id="projectDescription" 
+                    value={project.description || ''} 
+                    onChange={(e) => setProject({ ...project, description: e.target.value })}
+                  />
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="ai" className="h-full">
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="aiPrompt">Describe what you want to generate</Label>
-                    <Textarea 
-                      id="aiPrompt" 
-                      rows={6}
-                      placeholder="E.g., Generate a product description for a new smartphone with advanced camera features and long battery life."
-                      value={aiPrompt} 
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                    />
-                  </div>
-                  
-                  <Button 
-                    onClick={handleGenerateContent} 
-                    disabled={generatingContent || !aiPrompt.trim()}
-                  >
-                    {generatingContent ? 'Generating...' : 'Generate Content'}
-                  </Button>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">AI Assistant Tips</h3>
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                      <li>Be specific about what you want to generate</li>
-                      <li>Mention the tone (professional, casual, friendly)</li>
-                      <li>Specify the target audience</li>
-                      <li>Include key points you want to highlight</li>
-                      <li>Mention any specific calls-to-action</li>
-                    </ul>
+                
+                <div>
+                  <Label htmlFor="template">Template</Label>
+                  <Input id="template" value={project.template || ''} disabled />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Theme Colors</Label>
+                  <div className="flex space-x-4">
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-blue-600 mb-1"></div>
+                      <span className="text-xs">Primary</span>
+                    </div>
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-gray-800 mb-1"></div>
+                      <span className="text-xs">Secondary</span>
+                    </div>
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-white border border-gray-300 mb-1"></div>
+                      <span className="text-xs">Background</span>
+                    </div>
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-gray-900 mb-1"></div>
+                      <span className="text-xs">Text</span>
+                    </div>
                   </div>
                 </div>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+                
+                <div>
+                  <Label>Font Settings</Label>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <Label htmlFor="headingFont" className="text-xs">Heading Font</Label>
+                      <select className="w-full border rounded p-2 text-sm">
+                        <option>Inter</option>
+                        <option>Roboto</option>
+                        <option>Montserrat</option>
+                        <option>Playfair Display</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="bodyFont" className="text-xs">Body Font</Label>
+                      <select className="w-full border rounded p-2 text-sm">
+                        <option>Inter</option>
+                        <option>Roboto</option>
+                        <option>Open Sans</option>
+                        <option>Lato</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <Button variant="destructive">Delete Project</Button>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="ai" className="h-full">
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="aiPrompt">Describe what you want to generate</Label>
+                  <Textarea 
+                    id="aiPrompt" 
+                    rows={6}
+                    placeholder="E.g., Generate a product description for a new smartphone with advanced camera features and long battery life."
+                    value={aiPrompt} 
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleGenerateContent} 
+                  disabled={generatingContent || !aiPrompt.trim()}
+                >
+                  {generatingContent ? 'Generating...' : 'Generate Content'}
+                </Button>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">AI Assistant Tips</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                    <li>Be specific about what you want to generate</li>
+                    <li>Mention the tone (professional, casual, friendly)</li>
+                    <li>Specify the target audience</li>
+                    <li>Include key points you want to highlight</li>
+                    <li>Mention any specific calls-to-action</li>
+                  </ul>
+                </div>
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
-    </DndProvider>
+    </div>
   );
 };
+
+export default Editor;
 
 export default Editor;
