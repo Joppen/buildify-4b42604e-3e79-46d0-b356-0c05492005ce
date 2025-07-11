@@ -230,5 +230,3 @@ const TicketsTable = () => {
 };
 
 export default TicketsTable;
-
-export default TicketsTable;
