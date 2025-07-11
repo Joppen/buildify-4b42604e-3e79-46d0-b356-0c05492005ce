@@ -14,6 +14,7 @@ import Templates from "./pages/Templates";
 import Editor from "./pages/Editor";
 import Preview from "./pages/Preview";
 import AIGenerator from "./pages/AIGenerator";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,10 @@ const App = () => (
           <Route path="/editor/:id" element={<Editor />} />
           <Route path="/preview/:id" element={<Preview />} />
           <Route path="/ai-generator" element={<AIGenerator />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

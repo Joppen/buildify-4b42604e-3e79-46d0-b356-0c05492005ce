@@ -61,6 +61,16 @@ const templates: Template[] = [
   }
 ];
 
+// Template preview images
+const templatePreviews = {
+  blog: '/src/assets/skärmbild_11-7-2025_73224_be14c8b0-fe74-40.jpeg',
+  ecommerce: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc',
+  portfolio: 'https://images.unsplash.com/photo-1545239351-ef35f43d514b',
+  landing: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c',
+  social: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac',
+  content: 'https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06'
+};
+
 const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
@@ -75,16 +85,26 @@ const Templates = () => {
   });
 
   const handleSelectTemplate = (template: Template) => {
-    // In a real implementation, we would create a new project in Supabase
-    // and then redirect to the editor
+    // Map template names to template types for the URL
+    const templateTypeMap = {
+      'Blog': 'blog',
+      'E-commerce': 'ecommerce',
+      'Portfolio': 'portfolio',
+      'Landing Page': 'landing',
+      'Community Forum': 'social',
+      'Documentation': 'content'
+    };
+    
+    const templateType = templateTypeMap[template.name] || 'landing';
+    
     toast({
       title: "Template selected",
       description: `You selected the ${template.name} template.`,
     });
     
-    // Mock project creation
+    // Mock project creation with template type in query params
     const newProjectId = Math.random().toString(36).substring(2, 9);
-    navigate(`/editor/${newProjectId}`);
+    navigate(`/editor/${newProjectId}?template=${templateType}`);
   };
 
   const handleAIGeneration = () => {
@@ -170,6 +190,72 @@ const Templates = () => {
                   <CardTitle>{template.name}</CardTitle>
                   <CardDescription>{template.description}</CardDescription>
                 </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-500 mb-4">
+                    {template.name === 'Blog' && (
+                      <p>Includes blog posts, categories, author profiles, and comments.</p>
+                    )}
+                    {template.name === 'E-commerce' && (
+                      <p>Includes product listings, shopping cart, checkout, and order management.</p>
+                    )}
+                    {template.name === 'Portfolio' && (
+                      <p>Includes project showcases, skills section, about page, and contact form.</p>
+                    )}
+                    {template.name === 'Landing Page' && (
+                      <p>Includes hero section, features, testimonials, pricing, and call-to-action.</p>
+                    )}
+                    {template.name === 'Community Forum' && (
+                      <p>Includes discussion boards, user profiles, notifications, and search.</p>
+                    )}
+                    {template.name === 'Documentation' && (
+                      <p>Includes searchable docs, code examples, navigation, and versioning.</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {template.name === 'Blog' && (
+                      <>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Posts</span>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Categories</span>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Comments</span>
+                      </>
+                    )}
+                    {template.name === 'E-commerce' && (
+                      <>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Products</span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Cart</span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Checkout</span>
+                      </>
+                    )}
+                    {template.name === 'Portfolio' && (
+                      <>
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Projects</span>
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Skills</span>
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Contact</span>
+                      </>
+                    )}
+                    {template.name === 'Landing Page' && (
+                      <>
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Hero</span>
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Features</span>
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">CTA</span>
+                      </>
+                    )}
+                    {template.name === 'Community Forum' && (
+                      <>
+                        <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Discussions</span>
+                        <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Profiles</span>
+                        <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Search</span>
+                      </>
+                    )}
+                    {template.name === 'Documentation' && (
+                      <>
+                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Docs</span>
+                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Code</span>
+                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Search</span>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
                 <CardFooter>
                   <Button 
                     onClick={() => handleSelectTemplate(template)}
