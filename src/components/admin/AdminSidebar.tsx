@@ -9,8 +9,10 @@ import {
   CreditCard, 
   Settings, 
   HelpCircle, 
-  BarChart
+  BarChart,
+  LogOut
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -64,6 +66,11 @@ const AdminSidebar = () => {
     },
   ];
   
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+  
   return (
     <aside className="w-64 bg-gray-900 text-white hidden lg:block">
       <div className="h-full flex flex-col">
@@ -92,13 +99,14 @@ const AdminSidebar = () => {
         </nav>
         
         <div className="p-4 border-t border-gray-800">
-          <Link 
-            to="/admin/help"
-            className="flex items-center space-x-3 px-3 py-2 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          <Button 
+            variant="ghost" 
+            className="flex w-full items-center space-x-3 px-3 py-2 rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            onClick={handleLogout}
           >
-            <HelpCircle size={20} />
-            <span>Help & Support</span>
-          </Link>
+            <LogOut size={20} />
+            <span>Logout</span>
+          </Button>
         </div>
       </div>
     </aside>

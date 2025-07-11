@@ -20,15 +20,15 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkUser = async () => {
+    const checkUser = () => {
       // Check if user is logged in and is an admin
-      const userStr = localStorage.getItem('user');
-      if (!userStr) {
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) {
         navigate('/login');
         return;
       }
       
-      const user = JSON.parse(userStr);
+      const user = JSON.parse(storedUser);
       if (user.role !== 'admin') {
         toast({
           title: "Access denied",
@@ -46,6 +46,15 @@ const AdminDashboard = () => {
     checkUser();
   }, [navigate, toast]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/login');
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully.",
+    });
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading admin dashboard...</div>;
   }
@@ -61,7 +70,10 @@ const AdminDashboard = () => {
         
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+            </div>
             
             <StatsCards />
             
@@ -153,5 +165,7 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
+export default AdminDashboard;
 
 export default AdminDashboard;

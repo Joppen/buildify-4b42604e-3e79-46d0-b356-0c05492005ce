@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,61 +15,97 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    };
+    
+    checkUser();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // In a real implementation, we would authenticate with Supabase
-      // For demo purposes, we'll use hardcoded credentials
+      // Demo accounts
       if (email === 'admin@buildify.com' && password === 'admin123') {
         // Admin login
-        localStorage.setItem('user', JSON.stringify({
+        const adminUser = {
           id: 'admin-user-id',
           email: 'admin@buildify.com',
           role: 'admin',
           name: 'Admin User'
-        }));
+        };
+        
+        localStorage.setItem('user', JSON.stringify(adminUser));
         
         toast({
           title: "Admin login successful",
           description: "You have been logged in as an administrator.",
         });
         
-        navigate('/admin/dashboard');
+        setTimeout(() => {
+          navigate('/admin/dashboard');
+        }, 500);
         return;
       } else if (email === 'demo@buildify.com' && password === 'demo123') {
         // Demo user login
-        localStorage.setItem('user', JSON.stringify({
+        const demoUser = {
           id: 'demo-user-id',
           email: 'demo@buildify.com',
           role: 'user',
           name: 'Demo User'
-        }));
+        };
+        
+        localStorage.setItem('user', JSON.stringify(demoUser));
         
         toast({
           title: "Login successful",
           description: "You have been logged in as a demo user.",
         });
         
-        navigate('/dashboard');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
         return;
       }
       
       // If credentials don't match the demo accounts, try Supabase
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
+      // Store user in localStorage for easier access
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          role: 'user',
+          name: data.user.email?.split('@')[0] || 'User'
+        }));
+      }
+
       toast({
         title: "Login successful",
         description: "You have been logged in successfully.",
       });
       
-      navigate('/dashboard');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -89,6 +125,30 @@ const Login = () => {
   const handleAdminLogin = () => {
     setEmail('admin@buildify.com');
     setPassword('admin123');
+  };
+
+  const loginWithDemo = () => {
+    setEmail('demo@buildify.com');
+    setPassword('demo123');
+    
+    // Create a synthetic form submission event
+    const event = {
+      preventDefault: () => {}
+    } as React.FormEvent;
+    
+    handleLogin(event);
+  };
+
+  const loginWithAdmin = () => {
+    setEmail('admin@buildify.com');
+    setPassword('admin123');
+    
+    // Create a synthetic form submission event
+    const event = {
+      preventDefault: () => {}
+    } as React.FormEvent;
+    
+    handleLogin(event);
   };
 
   return (
@@ -146,15 +206,17 @@ const Login = () => {
             <div className="grid grid-cols-2 gap-2">
               <Button 
                 variant="outline" 
-                onClick={handleDemoLogin}
+                onClick={loginWithDemo}
                 className="text-sm"
+                disabled={loading}
               >
                 Demo User
               </Button>
               <Button 
                 variant="outline" 
-                onClick={handleAdminLogin}
+                onClick={loginWithAdmin}
                 className="text-sm"
+                disabled={loading}
               >
                 Admin User
               </Button>
